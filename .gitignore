@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+*.egg-info/
+.env
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+staticfiles/
