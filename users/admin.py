@@ -1,8 +1,14 @@
 from django.contrib import admin
 from .models import CustomUser
 
-@admin.register(CustomUser)
-class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'role', 'email', 'is_active']
-    list_filter = ['role', 'is_active']
-    search_fields = ['username', 'email']
+# Register your models here.
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser
+
+class CustomUserAdmin(UserAdmin):
+    fieldsets = UserAdmin.fieldsets + (
+        ('Role', {'fields': ('role',)}),
+    )
+
+admin.site.register(CustomUser, CustomUserAdmin)

@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cashier Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/cashier_dashboard.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>💼 Cashier Dashboard</h1>
+        <p>Welcome, {{ user.username }}! You are logged in as <strong>Cashier</strong>.</p>
+
+        <div class="info">
+            <p>🛒 Start a new bill from the navigation.</p>
+            <p>🧾 View today’s recent transactions.</p>
+        </div>
+    </div>
+</body>
+</html>

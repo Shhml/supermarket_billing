@@ -4,30 +4,51 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
 from .forms import CustomLoginForm
 
-class CustomLoginView(LoginView):
-    form_class = CustomLoginForm
-    template_name = 'users/login.html'
+# Create your views here.
+from django.shortcuts import redirect
 
-    def get_success_url(self):
-        user = self.request.user
-        if user.is_authenticated:
+def redirect_to_login(request):
+    return redirect('login')
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
             if user.role == 'admin':
-                return reverse_lazy('admin_dashboard')
+                return redirect('admin_dashboard')
             elif user.role == 'cashier':
-                return reverse_lazy('cashier_dashboard')
-        return reverse_lazy('login')
+                return redirect('cashier_dashboard')
+            else:
+                messages.error(request, "Unknown role assigned.")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    return render(request, 'login.html')
+
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 
 @login_required
 def admin_dashboard(request):
-    if request.user.role != 'admin':
-        return redirect('cashier_dashboard')
-    return render(request, 'users/admin_dashboard.html', {'user': request.user})
+    return render(request, 'admin_dashboard.html')
 
 @login_required
 def cashier_dashboard(request):
-    if request.user.role != 'cashier':
-        return redirect('admin_dashboard')
-    return render(request, 'users/cashier_dashboard.html', {'user': request.user})
+    return render(request, 'cashier_dashboard.html')
 
-class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy('login')
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
