@@ -24,4 +24,6 @@ urlpatterns = [
     path('', include('users.urls')),
     path('admin-dashboard/', user_views.admin_dashboard, name='admin_dashboard'),
     path('cashier-dashboard/', user_views.cashier_dashboard, name='cashier_dashboard'),
+    path('products/', include('products.urls')),
+
 ]

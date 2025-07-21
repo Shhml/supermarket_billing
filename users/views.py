@@ -41,3 +41,10 @@ def admin_dashboard(request):
 def cashier_dashboard(request):
     return render(request, 'cashier_dashboard.html')
 
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
