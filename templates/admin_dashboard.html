@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/admin_dashboard.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>👑 Admin Dashboard</h1>
+        <p>Welcome, {{ user.username }}! You are logged in as <strong>Admin</strong>.</p>
+
+        <div class="info">
+            <p>📊 Today’s Sales: ₹XXXX</p>
+            <p>🧾 Total Bills Today: N</p>
+            <p>🚨 Low Stock Alerts: M products</p>
+        </div>
+    </div>
+</body>
+</html>
