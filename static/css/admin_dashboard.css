@@ -1,0 +1,24 @@
+/*===============================
+ basic styles for admin dashboard
+================================*/
+
+body {
+    font-family: Arial;
+    background: #f0f2f5;
+    padding: 40px;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #333;
+}
+.info {
+    margin-top: 20px;
+    font-size: 1.1rem;
+}
