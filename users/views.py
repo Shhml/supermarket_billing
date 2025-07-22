@@ -52,3 +52,12 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
+from inventory.models import Inventory
+from django.db.models import F
+
+def admin_dashboard(request):
+    low_stock_count = Inventory.objects.filter(quantity__lt=F('restock_threshold')).count()
+    return render(request, 'admin_dashboard.html', {
+        'low_stock_count': low_stock_count,
+        # Add any other dashboard values like sales or total bills
+    })
