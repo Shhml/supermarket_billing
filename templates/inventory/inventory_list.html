@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Inventory List</h2>
+
+  <!-- Search Bar -->
+  <input type="text" class="form-control mb-3" id="searchInput" placeholder="Search by product name" onkeyup="searchTable()">
+
+  <!-- Table -->
+  <table class="table table-bordered table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Threshold</th>
+        <th>Last Restocked</th>
+        <th>Status</th>
+        {% if user.role == 'admin' %}
+        <th>Actions</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in inventory_list %}
+      <tr {% if item.is_low_stock %}class="table-danger"{% endif %}>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.restock_threshold }}</td>
+        <td>{{ item.last_restocked|date:"Y-m-d H:i" }}</td>
+        <td>
+          {% if item.is_low_stock %}
+            <span class="badge bg-danger">Low Stock</span>
+          {% else %}
+            <span class="badge bg-success">In Stock</span>
+          {% endif %}
+        </td>
+        {% if user.role == 'admin' %}
+        <td><a href="{% url 'inventory_edit' item.pk %}" class="btn btn-sm btn-warning">Edit</a></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+function searchTable() {
+  const input = document.getElementById("searchInput").value.toUpperCase();
+  const rows = document.querySelectorAll("table tbody tr");
+  rows.forEach(row => {
+    const firstCell = row.querySelector("td");
+    row.style.display = firstCell.textContent.toUpperCase().includes(input) ? "" : "none";
+  });
+}
+</script>
+{% endblock %}
