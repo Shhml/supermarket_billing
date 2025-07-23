@@ -1,20 +1,31 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Cashier Dashboard</title>
-    <link rel="stylesheet" href="{% static 'css/cashier_dashboard.css' %}">
-</head>
-<body>
-    <div class="container">
-        <h1>💼 Cashier Dashboard</h1>
-        <p>Welcome, {{ user.username }}! You are logged in as <strong>Cashier</strong>.</p>
 
-        <div class="info">
-            <p>🛒 Start a new bill from the navigation.</p>
-            <p>🧾 View today’s recent transactions.</p>
+{% block content %}
+<div class="container mt-5">
+    <h2>💼 Cashier Dashboard</h2>
+    <p class="lead">Welcome, {{ user.username }}! You are logged in as <strong>Cashier</strong>.</p>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-primary mb-3">
+                <div class="card-header bg-primary text-white">🧾 Create a New Bill</div>
+                <div class="card-body">
+                    <p>Start a new transaction for a customer.</p>
+                    <a href="{% url 'create_bill' %}" class="btn btn-primary">Create Bill</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-secondary mb-3">
+                <div class="card-header bg-secondary text-white">📋 View All Bills</div>
+                <div class="card-body">
+                    <p>Check your past billing history and receipts.</p>
+                    <a href="{% url 'bill_list' %}" class="btn btn-secondary">View Bills</a>
+                </div>
+            </div>
         </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

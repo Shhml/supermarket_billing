@@ -10,6 +10,7 @@ urlpatterns = [
     path('cashier-dashboard/', user_views.cashier_dashboard, name='cashier_dashboard'),
     path('products/', include('products.urls')),
     path('inventory/', include('inventory.urls')),
+    path('billing/', include('billing.urls')),
     
 
 

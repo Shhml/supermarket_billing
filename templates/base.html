@@ -19,6 +19,19 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
 
+                    <!-- Billing Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="billingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Billing
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="billingDropdown">
+                            <li><a class="dropdown-item" href="{% url 'bill_list' %}">View Bills</a></li>
+                            {% if user.role == "admin" or user.role == "cashier" %}
+                            <li><a class="dropdown-item" href="{% url 'create_bill' %}">Create Bill</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+
                     <!-- Inventory Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="inventoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
