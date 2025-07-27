@@ -1,6 +1,7 @@
 from django import forms
 from .models import Bill, BillItem
 from products.models import Product
+from customers.models import Customer
 
 class BillForm(forms.ModelForm):
     class Meta:
