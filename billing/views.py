@@ -111,7 +111,7 @@ def final_submit_bill(request, customer_id):
     if request.method == 'POST':
         bill_data = request.session.get('bill_data')
         bill_items = request.session.get('bill_items')
-        loyalty_discount = float(request.POST.get('loyalty_discount', 0))
+        loyalty_discount = Decimal(request.POST.get('loyalty_discount', '0'))
 
         if not bill_data or not bill_items:
             messages.error(request, "Session expired. Please start again.")
@@ -119,17 +119,17 @@ def final_submit_bill(request, customer_id):
 
         customer = get_object_or_404(Customer, id=customer_id)
 
-        # Create Bill
+        # Create Bill (initially with 0 total_amount)
         bill = Bill.objects.create(
             bill_number=str(uuid.uuid4())[:8],
             cashier=request.user,
             customer=customer,
             discount=loyalty_discount,
             payment_method=bill_data.get('payment_method'),
-            total_amount=0  # Will update later
+            total_amount=0
         )
 
-        total = 0
+        total = Decimal('0')
         for item in bill_items:
             product = get_object_or_404(Product, id=item['product_id'])
             quantity = item['quantity']
@@ -137,7 +137,7 @@ def final_submit_bill(request, customer_id):
             total += quantity * price
 
             # Inventory check
-            inventory = Inventory.objects.get(product=product)
+            inventory = get_object_or_404(Inventory, product=product)
             if inventory.quantity < quantity:
                 bill.delete()
                 messages.error(request, f"Not enough stock for '{product.name}'.")
@@ -153,12 +153,11 @@ def final_submit_bill(request, customer_id):
                 price_at_purchase=price
             )
 
-        # Apply discount
-        loyalty_discount = float(request.POST.get('loyalty_discount', 0))
-        loyalty_discount = Decimal(request.POST.get('loyalty_discount', '0'))
+        # Update total_amount after applying loyalty discount
+        bill.total_amount = total - loyalty_discount
         bill.save()
 
-        # Update loyalty points (earn 1 per ₹100 spent)
+        # Update customer loyalty points
         earned_points = int(bill.total_amount // 100)
         spent_points = int(loyalty_discount * 10)
         customer.loyalty_points = customer.loyalty_points - spent_points + earned_points
