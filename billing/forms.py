@@ -1,5 +1,10 @@
 from django import forms
 from .models import Bill, BillItem
+<<<<<<< HEAD
+=======
+from products.models import Product
+from customers.models import Customer
+>>>>>>> 207c8fcc7cd7ec2ff636bbe79f5a13da810261e0
 
 class BillForm(forms.ModelForm):
     class Meta:
