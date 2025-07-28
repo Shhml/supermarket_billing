@@ -1,0 +1,33 @@
+<h2>Final Bill Summary</h2>
+
+<p><strong>Customer:</strong> {{ customer.name }}</p>
+<p><strong>Bill Number:</strong> {{ bill.bill_number }}</p>
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Unit Price</th>
+        <th>Total</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>₹{{ item.price_at_purchase }}</td>
+        <td>₹{{ item.total_price }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><strong>Total:</strong> ₹{{ total }}</p>
+<p><strong>Discount (Loyalty):</strong> ₹{{ discount }}</p>
+<p><strong>Final Amount:</strong> ₹{{ final_amount }}</p>
+
+<br>
+
+<!-- ✅ BACK button -->
+<a href="{% url 'cashier_dashboard' %}" class="btn btn-secondary">⬅ Back to Cashier Dashboard</a>
+
+<!-- ✅ NEXT BILL button -->
+<a href="{% url 'create_bill' %}" class="btn btn-primary">➕ Create Next Bill</a>
