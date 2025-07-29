@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Customer Details</h2>
+
+  <!-- Search Customer Form -->
+  <h4>Search Existing Customer</h4>
+  <form method="post" action="{% url 'customer_entry' %}" id="search-customer-form" class="mb-4">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="search_customer">
+    <input type="hidden" name="bill_id" value="{{ bill_id }}">
+    <div class="mb-3">
+      <label for="search_query"><strong>Search by Name or Phone:</strong></label>
+      <input type="text" name="search_query" id="search_query" class="form-control" placeholder="Enter name or phone number" value="{{ search_query }}">
+    </div>
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+    <button type="submit" class="btn btn-primary" id="search-btn">Search Customer</button>
+  </form>
+
+  <!-- Search Results -->
+  {% if customers %}
+  <h4>Found Customers</h4>
+  <form method="post" action="{% url 'customer_entry' %}" id="select-customer-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="select_customer">
+    <input type="hidden" name="bill_id" value="{{ bill_id }}">
+    <table class="table table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Select</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Loyalty Points</th>
+          <th>Eligible Discount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in customers %}
+        <tr>
+          <td>
+            <input type="radio" name="customer_id" value="{{ item.customer.id }}" required>
+          </td>
+          <td>{{ item.customer.name }}</td>
+          <td>{{ item.customer.phone }}</td>
+          <td>{{ item.customer.loyalty_points }}</td>
+          <td>₹{{ item.discount }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No customers found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-success" id="select-btn">Proceed with Selected Customer</button>
+  </form>
+  {% endif %}
+
+  <!-- Add New Customer Form -->
+  <h4>Add New Customer</h4>
+  <form method="post" action="{% url 'customer_entry' %}" id="add-customer-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add_customer">
+    <input type="hidden" name="bill_id" value="{{ bill_id }}">
+    <div class="mb-3">
+      <label for="name"><strong>Name:</strong></label>
+      <input type="text" name="name" id="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="phone"><strong>Phone:</strong></label>
+      <input type="text" name="phone" id="phone" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary" id="add-btn">Add Customer and Proceed</button>
+  </form>
+</div>
+
+<script>
+  const searchForm = document.getElementById("search-customer-form");
+  const selectForm = document.getElementById("select-customer-form");
+  const addForm = document.getElementById("add-customer-form");
+  const searchBtn = document.getElementById("search-btn");
+  const selectBtn = document.getElementById("select-btn");
+  const addBtn = document.getElementById("add-btn");
+
+  searchForm.addEventListener("submit", () => {
+    searchBtn.disabled = true;
+    searchBtn.innerText = "Searching...";
+  });
+
+  if (selectForm) {
+    selectForm.addEventListener("submit", () => {
+      selectBtn.disabled = true;
+      selectBtn.innerText = "Processing...";
+    });
+  }
+
+  addForm.addEventListener("submit", () => {
+    addBtn.disabled = true;
+    addBtn.innerText = "Adding...";
+  });
+</script>
+{% endblock %}

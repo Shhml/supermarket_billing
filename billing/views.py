@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import formset_factory
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
 from .models import Bill, BillItem
 from .forms import BillForm, BillItemForm
-from django.contrib.auth.decorators import login_required
 from inventory.models import Inventory
-from customers.models import Customer  # for check_customer
-from django.contrib import messages
+from customers.models import Customer
+from products.models import Product
+from django.db import models
 import uuid
 from decimal import Decimal
 
+def generate_bill_number():
+    return f"BILL-{uuid.uuid4().hex[:8].upper()}"
 
 @login_required
 def create_bill(request):
@@ -18,205 +23,165 @@ def create_bill(request):
         bill_form = BillForm(request.POST)
         formset = BillItemFormSet(request.POST)
         action = request.POST.get('action')
+        if action == 'proceed_to_customer' and bill_form.is_valid() and formset.is_valid():
+            # Save bill as draft
+            bill = bill_form.save(commit=False)
+            bill.cashier = request.user
+            bill.bill_number = generate_bill_number()
+            bill.total_amount = Decimal('0')
+            bill.status = 'draft'
+            bill.save()
 
-        if action == 'check_customer':
-            if bill_form.is_valid() and formset.is_valid():
-                request.session['bill_data'] = {
-                    'discount': float(bill_form.cleaned_data.get('discount', 0)),
-                    'payment_method': bill_form.cleaned_data.get('payment_method')
-                }
-                request.session['bill_items'] = [
-                    {
-                        'product_id': form.cleaned_data['product'].id,
-                        'quantity': form.cleaned_data['quantity']
-                    }
-                    for form in formset if form.cleaned_data
-                ]
-                return redirect('customer_entry')  # 👈 Go to customer entry form
-            else:
-                messages.error(request, "Please correct the form errors.")
+            # Save bill items and calculate total
+            for form in formset:
+                if form.cleaned_data:
+                    bill_item = form.save(commit=False)
+                    product = bill_item.product
+                    inventory = get_object_or_404(Inventory, product=product)
+                    if inventory.quantity < bill_item.quantity:
+                        bill.delete()
+                        messages.error(request, f"Not enough stock for '{product.name}'.")
+                        return redirect('create_bill')
+                    bill_item.bill = bill
+                    bill_item.price_at_purchase = product.price
+                    bill_item.save()
+                    bill.total_amount += bill_item.total_price
+            bill.total_amount -= bill.discount
+            bill.save()
 
+            request.session['bill_id'] = bill.id
+            return redirect('customer_entry')
+        else:
+            messages.error(request, "Please correct the form errors.")
     else:
         bill_form = BillForm()
         formset = BillItemFormSet()
-        generated_bill_number = str(uuid.uuid4())[:8]
+        generated_bill_number = generate_bill_number()
 
     return render(request, 'billing/bill_form.html', {
         'bill_form': bill_form,
         'formset': formset,
-        'bill_number': locals().get('generated_bill_number')
+        'bill_number': generated_bill_number
     })
 
-
-
 @login_required
-def bill_list(request):
-    bills = Bill.objects.all()
-    return render(request, 'billing/bill_list.html', {'bills': bills})
-
-
-@login_required
-def check_customer(request, customer_id):
-    customer = get_object_or_404(Customer, id=customer_id)
-    bill_data = request.session.get('bill_data')
-    bill_items = request.session.get('bill_items')
-
-    if not bill_data or not bill_items:
-        messages.error(request, "Bill session data missing. Please re-enter the bill.")
+def customer_entry(request):
+    bill_id = request.session.get('bill_id')
+    if not bill_id:
+        messages.error(request, "No bill in progress.")
         return redirect('create_bill')
 
-    # Loyalty calculation logic (example: ₹1 discount for every 10 points)
-    loyalty_points = customer.loyalty_points
-    discount_from_loyalty = loyalty_points // 10
-
-    return render(request, 'billing/check_customer.html', {
-        'customer': customer,
-        'loyalty_points': loyalty_points,
-        'discount_from_loyalty': discount_from_loyalty,
-    })
-
-
-from customers.models import Customer
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Customer
-
-def customer_entry(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        phone = request.POST.get('phone')
+        action = request.POST.get('action')
+        if action == 'search_customer':
+            search_query = request.POST.get('search_query')
+            if search_query:
+                customers = Customer.objects.filter(
+                    models.Q(name__icontains=search_query) | models.Q(phone__icontains=search_query)
+                )
+                # Calculate eligible discount for each customer
+                customers_with_discount = [
+                    {'customer': c, 'discount': c.loyalty_points // 10}
+                    for c in customers
+                ]
+                return render(request, 'customers/customer_entry.html', {
+                    'bill_id': bill_id,
+                    'customers': customers_with_discount,
+                    'search_query': search_query
+                })
+            else:
+                messages.error(request, "Please enter a name or phone number to search.")
+        elif action == 'add_customer':
+            name = request.POST.get('name')
+            phone = request.POST.get('phone')
+            if name and phone:
+                try:
+                    customer = Customer.objects.create(name=name, phone=phone, loyalty_points=0)
+                    return redirect('final_bill', customer_id=customer.id)
+                except:
+                    messages.error(request, "Phone number already exists.")
+            else:
+                messages.error(request, "Both name and phone are required.")
+        elif action == 'select_customer':
+            customer_id = request.POST.get('customer_id')
+            if customer_id:
+                return redirect('final_bill', customer_id=customer_id)
+            else:
+                messages.error(request, "Please select a customer.")
 
-        if phone:
-            try:
-                # Try to find an existing customer by phone
-                customer = Customer.objects.get(phone=phone)
-                return redirect('customer_summary', customer_id=customer.id)
-            except Customer.DoesNotExist:
-                # If not found, create new customer if name is given
-                if name:
-                    customer = Customer.objects.create(name=name, phone=phone)
-                    return redirect('customer_summary', customer_id=customer.id)
-                else:
-                    return render(request, 'billing/customer_entry.html', {
-                        'error': "Customer not found. Please enter name to register."
-                    })
-    return render(request, 'billing/customer_entry.html')
+    return render(request, 'customers/customer_entry.html', {'bill_id': bill_id})
 
+@login_required
+def final_bill(request, customer_id):
+    bill_id = request.session.get('bill_id')
+    if not bill_id:
+        messages.error(request, "No bill in progress.")
+        return redirect('create_bill')
 
+    bill = get_object_or_404(Bill, id=bill_id)
+    customer = get_object_or_404(Customer, id=customer_id)
+    items = bill.items.all()
+    total = sum(item.total_price for item in items)
+    loyalty_discount = customer.loyalty_points // 10  # Compute discount in view
+    final_amount = max(total - bill.discount - Decimal(loyalty_discount), 0)
 
-from products.models import Product  # Adjust if needed
+    return render(request, 'billing/final_bill.html', {
+        'bill': bill,
+        'customer': customer,
+        'items': items,
+        'total': total,
+        'discount': bill.discount + Decimal(loyalty_discount),
+        'final_amount': final_amount,
+        'loyalty_discount': loyalty_discount
+    })
 
 @login_required
 def final_submit_bill(request, customer_id):
+    bill_id = request.session.get('bill_id')
+    if not bill_id:
+        messages.error(request, "No bill in progress.")
+        return redirect('create_bill')
+
     if request.method == 'POST':
-        bill_data = request.session.get('bill_data')
-        bill_items = request.session.get('bill_items')
-        loyalty_discount = Decimal(request.POST.get('loyalty_discount', '0'))
-
-        if not bill_data or not bill_items:
-            messages.error(request, "Session expired. Please start again.")
-            return redirect('create_bill')
-
+        bill = get_object_or_404(Bill, id=bill_id)
         customer = get_object_or_404(Customer, id=customer_id)
+        loyalty_discount = Decimal(request.POST.get('loyalty_discount', 0))
 
-        # Create Bill (initially with 0 total_amount)
-        bill = Bill.objects.create(
-            bill_number=str(uuid.uuid4())[:8],
-            cashier=request.user,
-            customer=customer,
-            discount=loyalty_discount,
-            payment_method=bill_data.get('payment_method'),
-            total_amount=0
-        )
-
-        total = Decimal('0')
-        for item in bill_items:
-            product = get_object_or_404(Product, id=item['product_id'])
-            quantity = item['quantity']
-            price = product.price
-            total += quantity * price
-
-            # Inventory check
-            inventory = get_object_or_404(Inventory, product=product)
-            if inventory.quantity < quantity:
-                bill.delete()
-                messages.error(request, f"Not enough stock for '{product.name}'.")
-                return redirect('create_bill')
-
-            inventory.quantity -= quantity
-            inventory.save()
-
-            BillItem.objects.create(
-                bill=bill,
-                product=product,
-                quantity=quantity,
-                price_at_purchase=price
-            )
-
-        # Update total_amount after applying loyalty discount
-        bill.total_amount = total - loyalty_discount
+        # Update bill
+        bill.customer = customer
+        bill.total_amount = max(bill.total_amount - loyalty_discount, 0)
+        bill.status = 'completed'
         bill.save()
 
-        # Update customer loyalty points
-        earned_points = int(bill.total_amount // 100)
-        spent_points = int(loyalty_discount * 10)
-        customer.loyalty_points = customer.loyalty_points - spent_points + earned_points
+        # Update inventory
+        for item in bill.items.all():
+            inventory = get_object_or_404(Inventory, product=item.product)
+            inventory.quantity -= item.quantity
+            inventory.save()
+
+        # Update loyalty points
+        earned_points = int(bill.total_amount // 100)  # ₹100 = 1 point
+        spent_points = int(loyalty_discount * 10)  # ₹1 = 10 points
+        customer.loyalty_points = max(customer.loyalty_points - spent_points, 0) + earned_points
         customer.save()
 
         # Clear session
-        request.session.pop('bill_data', None)
-        request.session.pop('bill_items', None)
-
+        request.session.pop('bill_id', None)
         messages.success(request, f"Bill #{bill.bill_number} created successfully.")
-        return redirect('final_bill', customer_id=customer.id)
+        return redirect('bill_list')
 
-    return redirect('final_bill')
+    return redirect('final_bill', customer_id=customer_id)
 
-def customer_summary(request, customer_id):
-    customer = get_object_or_404(Customer, id=customer_id)
-    loyalty_points = customer.loyalty_points
-    discount = loyalty_points * 1  # ₹1 per point
+@login_required
+def bill_list(request):
+    bills = Bill.objects.filter(status='completed')
+    return render(request, 'billing/bill_list.html', {'bills': bills})
 
-    if request.method == 'POST':
-        # Logic to finalize and show bill
-        bill = Bill.objects.filter(customer=customer).last()
-        items = bill.items.all()
-        total = sum(item.total_price for item in items)
-        final_amount = total - discount
+@login_required
+def cashier_dashboard(request):
+    return render(request, 'cashier_dashboard.html', {})
 
-        return render(request, 'billing/final_bill.html', {
-            'customer': customer,
-            'bill': bill,
-            'items': items,
-            'total': total,
-            'discount': discount,
-            'final_amount': final_amount
-        })
-
-    return render(request, 'billing/customer_summary.html', {
-        'customer': customer,
-        'loyalty_points': loyalty_points,
-        'discount': discount,
-    })
-
-
-from django.shortcuts import render, get_object_or_404
-from .models import Customer, Bill
-
-def final_bill(request, customer_id):
-    customer = get_object_or_404(Customer, id=customer_id)
-    bill = Bill.objects.filter(customer=customer).last()
-    items = bill.items.all()  # assuming a related_name='items' on BillItem model
-
-    total = sum(item.total_price for item in items)
-    discount = customer.loyalty_points * 1
-    final_amount = total - discount
-
-    return render(request, 'billing/final_bill.html', {
-        'customer': customer,
-        'bill': bill,
-        'items': items,
-        'total': total,
-        'discount': discount,
-        'final_amount': final_amount
-    })
+@login_required
+def get_product_price(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    return JsonResponse({'price': str(product.price)})

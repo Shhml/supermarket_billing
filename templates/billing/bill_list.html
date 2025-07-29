@@ -1,32 +1,35 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-<div class="container">
-    <h2>🧾 All Bills</h2>
-    <table class="table table-bordered">
-        <thead class="table-dark">
-            <tr>
-                <th>Bill #</th>
-                <th>Cashier</th>
-                <th>Total</th>
-                <th>Discount</th>
-                <th>Payment</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for bill in bills %}
-            <tr>
-                <td>{{ bill.bill_number }}</td>
-                <td>{{ bill.cashier.username }}</td>
-                <td>₹{{ bill.total_amount }}</td>
-                <td>₹{{ bill.discount }}</td>
-                <td>{{ bill.payment_method }}</td>
-                <td>{{ bill.created_at|date:"d M Y, h:i A" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6">No bills found.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container mt-5">
+  <h2>🧾 All Bills</h2>
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Bill #</th>
+        <th>Cashier</th>
+        <th>Total</th>
+        <th>Discount</th>
+        <th>Payment</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bill in bills %}
+      <tr>
+        <td>{{ bill.bill_number }}</td>
+        <td>{{ bill.cashier.username }}</td>
+        <td>₹{{ bill.total_amount }}</td>
+        <td>₹{{ bill.discount }}</td>
+        <td>{{ bill.payment_method }}</td>
+        <td>{{ bill.created_at|date:"d M Y, h:i A" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">No bills found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{% url 'cashier_dashboard' %}" class="btn btn-secondary">⬅ Back to Dashboard</a>
 </div>
 {% endblock %}

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'reports.apps.ReportsConfig',
     # Third-party apps
     'crispy_forms',
+    'mathfilters',
     
 ]
 

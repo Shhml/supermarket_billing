@@ -1,33 +1,62 @@
-<h2>Final Bill Summary</h2>
+{% extends 'base.html' %}
+{% load static %}
 
-<p><strong>Customer:</strong> {{ customer.name }}</p>
-<p><strong>Bill Number:</strong> {{ bill.bill_number }}</p>
+{% block content %}
+<div class="container mt-5">
+  <h2>Final Bill Summary</h2>
 
-<table border="1" cellpadding="6">
-    <tr>
+  <p><strong>Customer:</strong> {{ customer.name }}</p>
+  <p><strong>Phone:</strong> {{ customer.phone }}</p>
+  <p><strong>Bill Number:</strong> {{ bill.bill_number }}</p>
+  <p><strong>Loyalty Points:</strong> {{ customer.loyalty_points }}</p>
+
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
         <th>Product</th>
         <th>Qty</th>
         <th>Unit Price</th>
         <th>Total</th>
-    </tr>
-    {% for item in items %}
-    <tr>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
         <td>{{ item.product.name }}</td>
         <td>{{ item.quantity }}</td>
         <td>₹{{ item.price_at_purchase }}</td>
         <td>₹{{ item.total_price }}</td>
-    </tr>
-    {% endfor %}
-</table>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">No items in bill.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-<p><strong>Total:</strong> ₹{{ total }}</p>
-<p><strong>Discount (Loyalty):</strong> ₹{{ discount }}</p>
-<p><strong>Final Amount:</strong> ₹{{ final_amount }}</p>
+  <p><strong>Total:</strong> ₹{{ total }}</p>
+  <p><strong>Discount (Flat + Loyalty):</strong> ₹{{ discount }}</p>
+  <p><strong>Final Amount:</strong> ₹{{ final_amount }}</p>
 
-<br>
+  <form method="post" action="{% url 'final_submit_bill' customer.id %}" id="final-bill-form">
+    {% csrf_token %}
+    <input type="hidden" name="bill_id" value="{{ bill.id }}">
+    <input type="hidden" name="loyalty_discount" value="{{ loyalty_discount }}">
+    <button type="submit" class="btn btn-success" id="submit-final-btn">Submit Final Bill</button>
+  </form>
 
-<!-- ✅ BACK button -->
-<a href="{% url 'cashier_dashboard' %}" class="btn btn-secondary">⬅ Back to Cashier Dashboard</a>
+  <div class="mt-3">
+    <a href="{% url 'cashier_dashboard' %}" class="btn btn-secondary">⬅ Back to Cashier Dashboard</a>
+    <a href="{% url 'create_bill' %}" class="btn btn-primary">➕ Create Next Bill</a>
+  </div>
+</div>
 
-<!-- ✅ NEXT BILL button -->
-<a href="{% url 'create_bill' %}" class="btn btn-primary">➕ Create Next Bill</a>
+<script>
+  const finalBillForm = document.getElementById("final-bill-form");
+  const submitFinalBtn = document.getElementById("submit-final-btn");
+
+  finalBillForm.addEventListener("submit", () => {
+    submitFinalBtn.disabled = true;
+    submitFinalBtn.innerText = "Submitting...";
+  });
+</script>
+{% endblock %}
