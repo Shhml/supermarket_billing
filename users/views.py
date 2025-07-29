@@ -37,9 +37,36 @@ def user_login(request):
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
+
+from django.db.models import Sum, F
+from django.utils.timezone import now
+from billing.models import Bill
+from inventory.models import Inventory
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
 @login_required
 def admin_dashboard(request):
-    return render(request, 'admin_dashboard.html')
+    today = now().date()
+
+    total_sales_today = Bill.objects.filter(
+        created_at__date=today
+    ).aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+
+    total_bills_today = Bill.objects.filter(
+        created_at__date=today
+    ).count()
+
+    low_stock_count = Inventory.objects.filter(
+        quantity__lt=F('restock_threshold')
+    ).count()
+
+    return render(request, 'admin_dashboard.html', {
+        'total_sales_today': total_sales_today,
+        'total_bills_today': total_bills_today,
+        'low_stock_count': low_stock_count,
+    })
+
 
 @login_required
 def cashier_dashboard(request):
@@ -52,12 +79,6 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
-from inventory.models import Inventory
-from django.db.models import F
 
-def admin_dashboard(request):
-    low_stock_count = Inventory.objects.filter(quantity__lt=F('restock_threshold')).count()
-    return render(request, 'admin_dashboard.html', {
-        'low_stock_count': low_stock_count,
-        # Add any other dashboard values like sales or total bills
-    })
+
+

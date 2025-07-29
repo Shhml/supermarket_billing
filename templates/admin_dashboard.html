@@ -35,24 +35,25 @@
           <div class="bg-light p-3 rounded border">
             <i class="bi bi-bar-chart-line h4 text-success"></i>
             <p class="mb-1 mt-2">Today’s Sales</p>
-            <h5 class="fw-semibold">₹XXXX</h5>
+            <h5 class="fw-semibold">₹{{ total_sales_today }}</h5>
           </div>
         </div>
         <div class="col-md-4">
           <div class="bg-light p-3 rounded border">
             <i class="bi bi-receipt h4 text-primary"></i>
             <p class="mb-1 mt-2">Total Bills Today</p>
-            <h5 class="fw-semibold">N</h5>
+            <h5 class="fw-semibold">{{ total_bills_today }}</h5>
           </div>
         </div>
         <div class="col-md-4">
           <div class="bg-light p-3 rounded border">
             <i class="bi bi-exclamation-triangle h4 text-danger"></i>
             <p class="mb-1 mt-2">Low Stock Alerts</p>
-            <h5 class="fw-semibold">M Products</h5>
+            <h5 class="fw-semibold">{{ low_stock_count }} Products</h5>
           </div>
         </div>
       </div>
+
 
       <hr class="mt-4">
 
