@@ -78,7 +78,40 @@ from django.shortcuts import redirect
 def user_logout(request):
     logout(request)
     return redirect('login')
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.contrib.auth.models import User
 
-
-
-
+@login_required
+def create_user(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        
+        # Handle AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if form.is_valid():
+                user = form.save()
+                return JsonResponse({
+                    'success': True, 
+                    'message': f'User "{user.username}" created successfully!'
+                })
+            else:
+                return JsonResponse({
+                    'success': False, 
+                    'errors': form.errors
+                })
+        
+        # Handle regular form submission
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, f'User "{user.username}" created successfully!')
+            return redirect('admin_dashboard')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = UserCreationForm()
+    
+    return render(request, 'create_user.html', {'form': form})
