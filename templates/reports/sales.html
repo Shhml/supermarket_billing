@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sales Report{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Sales Report</h1>
+        </div>
+    </div>
+
+    <!-- Period Selector -->
+    <div class="row">
+        <div class="col-12">
+            <div class="period-selector">
+                <form method="get" class="form-inline">
+                    <label for="period" class="mr-2">Select Period:</label>
+                    <select name="period" id="period" class="form-control mr-2" onchange="this.form.submit()">
+                        <option value="7" {% if request.GET.period == '7' %}selected{% endif %}>Last 7 days</option>
+                        <option value="30" {% if request.GET.period == '30' or not request.GET.period %}selected{% endif %}>Last 30 days</option>
+                        <option value="90" {% if request.GET.period == '90' %}selected{% endif %}>Last 90 days</option>
+                        <option value="365" {% if request.GET.period == '365' %}selected{% endif %}>Last year</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Total Revenue</h4>
+                <h2>₹{{ total_revenue|floatformat:2 }}</h2>
+                <small>Selected period</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Total Bills</h4>
+                <h2>{{ total_bills }}</h2>
+                <small>Selected period</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Average Bill</h4>
+                <h2>₹{{ average_bill|floatformat:2 }}</h2>
+                <small>Selected period</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Export Options</h4>
+                <a href="{% url 'reports:export_sales_csv' %}?period={{ request.GET.period|default:'30' }}" class="export-btn">CSV</a>
+                <a href="{% url 'reports:export_sales_pdf' %}?period={{ request.GET.period|default:'30' }}" class="export-btn">PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="chart-container">
+                <h4>Daily Sales Trend</h4>
+                <canvas id="salesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-container">
+                <h4>Payment Methods</h4>
+                <canvas id="paymentChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Methods Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Payment Method Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Payment Method</th>
+                                    <th>Number of Transactions</th>
+                                    <th>Total Amount</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for method in payment_methods %}
+                                <tr>
+                                    <td>{{ method.payment_method }}</td>
+                                    <td>{{ method.count }}</td>
+                                    <td>₹{{ method.total|floatformat:2 }}</td>
+                                    <td>{{ method.percentage }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    // Daily Sales Chart
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for day in daily_sales %}'{{ day.day }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Daily Revenue',
+                data: [{% for day in daily_sales %}{{ day.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }, {
+                label: 'Number of Bills',
+                data: [{% for day in daily_sales %}{{ day.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderWidth: 2,
+                fill: false,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Revenue (₹)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Number of Bills'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+
+    // Payment Methods Chart
+    const paymentCtx = document.getElementById('paymentChart').getContext('2d');
+    const paymentChart = new Chart(paymentCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for method in payment_methods %}'{{ method.payment_method }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for method in payment_methods %}{{ method.total }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

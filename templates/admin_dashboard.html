@@ -69,6 +69,18 @@
           <li class="list-group-item">
             <a href="{% url 'inventory_add' %}"><i class="bi bi-plus-circle"></i> Add Inventory</a>
           </li>
+          <li class="list-group-item">
+            <a href="{% url 'reports:dashboard' %}"><i class="bi bi-graph-up"></i> Reports Dashboard</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'reports:sales' %}"><i class="bi bi-cash-stack"></i> Sales Reports</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'reports:inventory' %}"><i class="bi bi-boxes"></i> Inventory Reports</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'customers:customer_list' %}"><i class="bi bi-people"></i> Manage Customers</a>
+          </li>
         </ul>
       </div>
 

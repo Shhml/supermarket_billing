@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customer List{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Customer List</h1>
+                <a href="{% url 'customers:customer_add' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Add Customer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if customers %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Loyalty Points</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in customers %}
+                                <tr>
+                                    <td>{{ customer.name }}</td>
+                                    <td>{{ customer.phone }}</td>
+                                    <td>{{ customer.email|default:"-" }}</td>
+                                    <td>{{ customer.loyalty_points }}</td>
+                                    <td>
+                                        <a href="{% url 'customers:customer_detail' customer.pk %}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{% url 'customers:customer_edit' customer.pk %}" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'customers:customer_delete' customer.pk %}" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5>No customers found</h5>
+                <p>Start by adding your first customer.</p>
+                <a href="{% url 'customers:customer_add' %}" class="btn btn-primary">Add Customer</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
