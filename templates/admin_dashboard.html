@@ -74,50 +74,126 @@
           </h5>
           
           <div class="row">
-            <div class="col-md-6">
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                  <a href="{% url 'product_list' %}" class="quick-link">
-                    <i class="bi bi-box-seam"></i>
-                    <span>Manage Products</span>
-                  </a>
-                </li>
-                <li class="list-group-item">
-                  <a href="{% url 'inventory_list' %}" class="quick-link">
-                    <i class="bi bi-archive"></i>
-                    <span>View Inventory</span>
-                  </a>
-                </li>
-                <li class="list-group-item">
-                  <a href="{% url 'inventory_add' %}" class="quick-link">
-                    <i class="bi bi-plus-circle"></i>
-                    <span>Add New Inventory</span>
-                  </a>
-                </li>
-              </ul>
+            <!-- Left Column - Inventory & Products -->
+            <div class="col-lg-4 col-md-6">
+              <div class="quick-links-group">
+                <h6 class="group-title">
+                  <i class="bi bi-box-seam"></i>
+                  Inventory & Products
+                </h6>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item">
+                    <a href="{% url 'product_list' %}" class="quick-link">
+                      <i class="bi bi-box-seam"></i>
+                      <span>Manage Products</span>
+                    </a>
+                  </li>
+                  <li class="list-group-item">
+                    <a href="{% url 'inventory_list' %}" class="quick-link">
+                      <i class="bi bi-archive"></i>
+                      <span>View Inventory</span>
+                    </a>
+                  </li>
+                  <li class="list-group-item">
+                    <a href="{% url 'inventory_add' %}" class="quick-link">
+                      <i class="bi bi-plus-circle"></i>
+                      <span>Add New Inventory</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
             
+            <!-- Middle Column - Reports -->
+            <div class="col-lg-4 col-md-6">
+              <div class="quick-links-group">
+                <h6 class="group-title">
+                  <i class="bi bi-graph-up-arrow"></i>
+                  Reports & Analytics
+                </h6>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item">
+                    <a href="{% url 'reports:dashboard' %}" class="quick-link reports-link">
+                      <i class="bi bi-speedometer2"></i>
+                      <span>Reports Dashboard</span>
+                    </a>
+                  </li>
+                  <li class="list-group-item">
+                    <a href="{% url 'reports:sales' %}" class="quick-link reports-link">
+                      <i class="bi bi-cash-stack"></i>
+                      <span>Sales Reports</span>
+                    </a>
+                  </li>
+                  <li class="list-group-item">
+                    <a href="{% url 'reports:inventory' %}" class="quick-link reports-link">
+                      <i class="bi bi-boxes"></i>
+                      <span>Inventory Reports</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- Right Column - System Management -->
+            <div class="col-lg-4 col-md-12">
+              <div class="quick-links-group">
+                <h6 class="group-title">
+                  <i class="bi bi-gear"></i>
+                  System Management
+                </h6>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item">
+                    <a href="{% url 'customers:customer_list' %}" class="quick-link">
+                      <i class="bi bi-people"></i>
+                      <span>Manage Customers</span>
+                    </a>
+                  </li>
+                  <li class="list-group-item">
+                    <a href="#" class="quick-link" data-bs-toggle="modal" data-bs-target="#userManagementModal">
+                      <i class="bi bi-person-gear"></i>
+                      <span>Manage Users</span>
+                    </a>
+                  </li>
+                  <li class="list-group-item">
+                    <a href="#" class="quick-link">
+                      <i class="bi bi-sliders"></i>
+                      <span>System Settings</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="recent-activity-section">
+          <h5 class="section-title">
+            <i class="bi bi-clock-history"></i>
+            Recent Activity
+          </h5>
+          <div class="row">
             <div class="col-md-6">
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                  <a href="#" class="quick-link">
-                    <i class="bi bi-graph-up"></i>
-                    <span>View Reports</span>
-                  </a>
-                </li>
-                <li class="list-group-item">
-                  <a href="#" class="quick-link" data-bs-toggle="modal" data-bs-target="#userManagementModal">
-                    <i class="bi bi-people"></i>
-                    <span>Manage Users</span>
-                  </a>
-                </li>
-                <li class="list-group-item">
-                  <a href="#" class="quick-link">
-                    <i class="bi bi-gear"></i>
-                    <span>System Settings</span>
-                  </a>
-                </li>
-              </ul>
+              <div class="activity-card">
+                <div class="activity-header">
+                  <i class="bi bi-receipt-cutoff"></i>
+                  <span>Latest Transactions</span>
+                </div>
+                <div class="activity-content">
+                  <p class="text-muted">Recent billing activities will appear here...</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="activity-card">
+                <div class="activity-header">
+                  <i class="bi bi-bell"></i>
+                  <span>System Alerts</span>
+                </div>
+                <div class="activity-content">
+                  <p class="text-muted">System notifications and alerts will appear here...</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -151,34 +227,6 @@
               </button>
             </li>
           </ul>
-
-      <!-- Quick Links with Inventory Buttons -->
-      <div class="mt-3">
-        <h5><i class="bi bi-link-45deg"></i> Quick Links</h5>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            <a href="{% url 'product_list' %}"><i class="bi bi-box-seam"></i> Manage Products</a>
-          </li>
-          <li class="list-group-item">
-            <a href="{% url 'inventory_list' %}"><i class="bi bi-archive"></i> View Inventory</a>
-          </li>
-          <li class="list-group-item">
-            <a href="{% url 'inventory_add' %}"><i class="bi bi-plus-circle"></i> Add Inventory</a>
-          </li>
-          <li class="list-group-item">
-            <a href="{% url 'reports:dashboard' %}"><i class="bi bi-graph-up"></i> Reports Dashboard</a>
-          </li>
-          <li class="list-group-item">
-            <a href="{% url 'reports:sales' %}"><i class="bi bi-cash-stack"></i> Sales Reports</a>
-          </li>
-          <li class="list-group-item">
-            <a href="{% url 'reports:inventory' %}"><i class="bi bi-boxes"></i> Inventory Reports</a>
-          </li>
-          <li class="list-group-item">
-            <a href="{% url 'customers:customer_list' %}"><i class="bi bi-people"></i> Manage Customers</a>
-          </li>
-        </ul>
-      </div>
 
           <!-- Tab Content -->
           <div class="tab-content" id="userManagementTabsContent">
@@ -423,54 +471,6 @@
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
       }, 2000);
-      
-      /* 
-      // Uncomment this when your create_user URL is configured:
-      
-      fetch('/create-user/', {  // Replace with your actual URL
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          messagesDiv.innerHTML = `
-            <div class="alert alert-success alert-dismissible fade show">
-              <i class="bi bi-check-circle"></i> ${data.message}
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-          `;
-          this.reset();
-        } else {
-          let errorHtml = '<div class="alert alert-danger alert-dismissible fade show">';
-          errorHtml += '<i class="bi bi-exclamation-triangle"></i> Please fix the following errors:<ul class="mb-0 mt-2">';
-          for (const [field, errors] of Object.entries(data.errors)) {
-            errors.forEach(error => {
-              errorHtml += `<li>${error}</li>`;
-            });
-          }
-          errorHtml += '</ul><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
-          messagesDiv.innerHTML = errorHtml;
-        }
-        messagesDiv.style.display = 'block';
-      })
-      .catch(error => {
-        messagesDiv.innerHTML = `
-          <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle"></i> An error occurred. Please try again.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        `;
-        messagesDiv.style.display = 'block';
-      })
-      .finally(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-      });
-      */
     });
   </script>
 </body>

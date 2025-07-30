@@ -239,6 +239,7 @@ body {
   padding: 30px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   position: relative;
+  margin-bottom: 30px;
 }
 
 .quick-links-section::before {
@@ -256,7 +257,7 @@ body {
   font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -270,19 +271,43 @@ body {
   background-clip: text;
 }
 
+/* Quick Links Groups */
+.quick-links-group {
+  margin-bottom: 25px;
+}
+
+.group-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 10px;
+  border-left: 4px solid #4CAF50;
+}
+
+.group-title i {
+  font-size: 18px;
+  color: #4CAF50;
+}
+
 /* List group styling */
 .list-group-flush .list-group-item {
   border: none;
   padding: 0;
   background: transparent;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .quick-link {
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 18px 20px;
+  padding: 15px 18px;
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   border-radius: 12px;
   text-decoration: none;
@@ -290,20 +315,87 @@ body {
   font-weight: 500;
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
+  font-size: 14px;
 }
 
 .quick-link:hover {
   background: linear-gradient(135deg, #4CAF50, #45a049);
   color: white;
-  transform: translateX(10px);
+  transform: translateX(8px);
   border-left-color: #2e7d32;
   box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  text-decoration: none;
 }
 
 .quick-link i {
-  font-size: 20px;
-  width: 24px;
+  font-size: 18px;
+  width: 20px;
   text-align: center;
+  transition: all 0.3s ease;
+}
+
+/* Special styling for reports links */
+.reports-link {
+  border-left-color: #2196F3 !important;
+}
+
+.reports-link:hover {
+  background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+  border-left-color: #1565C0 !important;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3) !important;
+}
+
+/* Recent Activity Section */
+.recent-activity-section {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.recent-activity-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  border-radius: 16px 16px 0 0;
+}
+
+.activity-card {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #ff6b6b;
+  transition: all 0.3s ease;
+}
+
+.activity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.activity-header i {
+  font-size: 20px;
+  color: #ff6b6b;
+}
+
+.activity-content {
+  color: #6c757d;
+  font-size: 14px;
 }
 
 /* Dividers */
@@ -350,8 +442,23 @@ hr {
     font-size: 28px !important;
   }
   
-  .quick-links-section {
+  .quick-links-section,
+  .recent-activity-section {
     padding: 20px;
+  }
+
+  .quick-links-group {
+    margin-bottom: 20px;
+  }
+
+  .group-title {
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+
+  .quick-link {
+    padding: 12px 15px;
+    font-size: 13px;
   }
 }
 
@@ -383,11 +490,28 @@ hr {
   .stat-value {
     font-size: 24px !important;
   }
+
+  .group-title {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .quick-link {
+    padding: 10px 12px;
+    font-size: 12px;
+    gap: 10px;
+  }
+
+  .quick-link i {
+    font-size: 16px;
+    width: 18px;
+  }
 }
 
 /* Animation for cards */
 .stat-card,
-.quick-links-section {
+.quick-links-section,
+.recent-activity-section {
   animation: fadeInUp 0.6s ease-out;
 }
 
