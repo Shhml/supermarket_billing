@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="create-user-page">
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="create-user-container">
+          
+          <!-- Header -->
+          <div class="page-header">
+            <h2 class="page-title">
+              <i class="bi bi-person-plus"></i>
+              Create New User
+            </h2>
+            <p class="page-subtitle">Add a new user account to the supermarket billing system</p>
+          </div>
+
+          <!-- Messages -->
+          {% if messages %}
+            <div class="messages-container">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                  <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <!-- Create User Form -->
+          <div class="form-container">
+            <div class="card border-0 shadow-lg">
+              <div class="card-header bg-gradient-success">
+                <h5 class="card-title text-white mb-0">
+                  <i class="bi bi-person-fill"></i>
+                  User Account Details
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <form method="post" id="createUserFormStandalone">
+                  {% csrf_token %}
+                  
+                  <div class="row g-3">
+                    <!-- Username -->
+                    <div class="col-md-6">
+                      <label for="{{ form.username.id_for_label }}" class="form-label">
+                        Username <span class="text-danger">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="bi bi-person"></i>
+                        </span>
+                        {{ form.username }}
+                      </div>
+                      {% if form.username.errors %}
+                        <div class="form-text text-danger">
+                          {{ form.username.errors.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                      <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="bi bi-envelope"></i>
+                        </span>
+                        {{ form.email }}
+                      </div>
+                      {% if form.email.errors %}
+                        <div class="form-text text-danger">
+                          {{ form.email.errors.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="col-md-6">
+                      <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                      {{ form.first_name }}
+                      {% if form.first_name.errors %}
+                        <div class="form-text text-danger">
+                          {{ form.first_name.errors.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="col-md-6">
+                      <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                      {{ form.last_name }}
+                      {% if form.last_name.errors %}
+                        <div class="form-text text-danger">
+                          {{ form.last_name.errors.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="col-md-6">
+                      <label for="{{ form.password1.id_for_label }}" class="form-label">
+                        Password <span class="text-danger">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="bi bi-lock"></i>
+                        </span>
+                        {{ form.password1 }}
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('{{ form.password1.id_for_label }}', 'toggleIcon1')">
+                          <i class="bi bi-eye" id="toggleIcon1"></i>
+                        </button>
+                      </div>
+                      {% if form.password1.errors %}
+                        <div class="form-text text-danger">
+                          {{ form.password1.errors.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="col-md-6">
+                      <label for="{{ form.password2.id_for_label }}" class="form-label">
+                        Confirm Password <span class="text-danger">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="bi bi-lock-fill"></i>
+                        </span>
+                        {{ form.password2 }}
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('{{ form.password2.id_for_label }}', 'toggleIcon2')">
+                          <i class="bi bi-eye" id="toggleIcon2"></i>
+                        </button>
+                      </div>
+                      {% if form.password2.errors %}
+                        <div class="form-text text-danger">
+                          {{ form.password2.errors.0 }}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Additional fields if present in form -->
+                    {% for field in form %}
+                      {% if field.name not in "username,email,first_name,last_name,password1,password2" %}
+                        <div class="col-md-6">
+                          <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                          </label>
+                          {{ field }}
+                          {% if field.errors %}
+                            <div class="form-text text-danger">
+                              {{ field.errors.0 }}
+                            </div>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+
+                  <!-- Form Actions -->
+                  <div class="form-actions mt-4">
+                    <div class="d-flex gap-3 justify-content-center">
+                      <button type="submit" class="btn btn-success btn-lg px-4">
+                        <i class="bi bi-person-plus"></i>
+                        Create User
+                      </button>
+                      <button type="reset" class="btn btn-secondary btn-lg px-4">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Reset Form
+                      </button>
+                      <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-arrow-left"></i>
+                        Back to Dashboard
+                      </a>
+                    </div>
+                  </div>
+                </form>
+              </div>
+              
+              <!-- Form Footer -->
+              <div class="card-footer bg-light text-center">
+                <small class="text-muted">
+                  <i class="bi bi-info-circle"></i>
+                  All fields marked with <span class="text-danger">*</span> are required
+                </small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Create User Page Specific Styles */
+.create-user-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+.create-user-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.create-user-container::before {
+  content: '👤';
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 32px;
+  opacity: 0.2;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.page-title i {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-subtitle {
+  color: #7f8c8d;
+  font-size: 16px;
+  margin: 0;
+}
+
+/* Messages */
+.messages-container {
+  margin-bottom: 30px;
+}
+
+/* Form Container */
+.form-container .card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #4CAF50, #45a049) !important;
+}
+
+.card-header.bg-gradient-success {
+  border-bottom: none;
+  padding: 20px 30px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Form Styling */
+.form-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-control, .form-select {
+  border: 2px solid #e1e8ed;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  background: white;
+}
+
+.input-group-text {
+  background: #e9ecef;
+  border: 2px solid #e1e8ed;
+  border-right: none;
+  color: #6c757d;
+  border-radius: 10px 0 0 10px;
+}
+
+.input-group .form-control {
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+}
+
+.input-group:focus-within .input-group-text {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.05);
+}
+
+/* Password Toggle Button */
+.input-group .btn-outline-secondary {
+  border: 2px solid #e1e8ed;
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  background: #f8f9fa;
+}
+
+.input-group:focus-within .btn-outline-secondary {
+  border-color: #4CAF50;
+}
+
+/* Error Messages */
+.form-text.text-danger {
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Form Actions */
+.form-actions {
+  border-top: 1px solid #e9ecef;
+  padding-top: 30px;
+}
+
+.btn-success.btn-lg {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-success.btn-lg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.btn-secondary.btn-lg {
+  background: #6c757d;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+}
+
+.btn-outline-primary.btn-lg {
+  border: 2px solid #2196F3;
+  color: #2196F3;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+}
+
+.btn-outline-primary.btn-lg:hover {
+  background: #2196F3;
+  border-color: #2196F3;
+}
+
+/* Card Footer */
+.card-footer {
+  background: rgba(248, 249, 250, 0.8) !important;
+  border-top: 1px solid #e9ecef;
+  padding: 15px 30px;
+}
+
+/* Alert Styling */
+.alert {
+  border: none;
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(69, 160, 73, 0.1));
+  color: #2e7d32;
+  border-left: 4px solid #4CAF50;
+}
+
+.alert-danger, .alert-error {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(238, 90, 82, 0.1));
+  color: #c62828;
+  border-left: 4px solid #ff6b6b;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(25, 118, 210, 0.1));
+  color: #1565C0;
+  border-left: 4px solid #2196F3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .create-user-container {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  
+  .page-title {
+    font-size: 28px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .form-actions .d-flex {
+    flex-direction: column;
+    gap: 15px !important;
+  }
+  
+  .btn-lg {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .create-user-page {
+    padding: 10px 0;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .card-header {
+    padding: 15px 20px !important;
+  }
+  
+  .card-body {
+    padding: 20px !important;
+  }
+}
+</style>
+
+<script>
+// Toggle password visibility
+function togglePasswordVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('bi-eye');
+    icon.classList.add('bi-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('bi-eye-slash');
+    icon.classList.add('bi-eye');
+  }
+}
+
+// Form validation and enhancement
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('createUserFormStandalone');
+  
+  // Add Bootstrap classes to form fields
+  const formControls = form.querySelectorAll('input, select, textarea');
+  formControls.forEach(field => {
+    if (!field.classList.contains('btn')) {
+      field.classList.add('form-control');
+    }
+  });
+  
+  // Form submission handling
+  form.addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating User...';
+    submitBtn.disabled = true;
+    
+    // Re-enable button after 5 seconds as fallback
+    setTimeout(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }, 5000);
+  });
+});
+</script>
+{% endblock %}
