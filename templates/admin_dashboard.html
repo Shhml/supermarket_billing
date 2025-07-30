@@ -152,6 +152,34 @@
             </li>
           </ul>
 
+      <!-- Quick Links with Inventory Buttons -->
+      <div class="mt-3">
+        <h5><i class="bi bi-link-45deg"></i> Quick Links</h5>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <a href="{% url 'product_list' %}"><i class="bi bi-box-seam"></i> Manage Products</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'inventory_list' %}"><i class="bi bi-archive"></i> View Inventory</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'inventory_add' %}"><i class="bi bi-plus-circle"></i> Add Inventory</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'reports:dashboard' %}"><i class="bi bi-graph-up"></i> Reports Dashboard</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'reports:sales' %}"><i class="bi bi-cash-stack"></i> Sales Reports</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'reports:inventory' %}"><i class="bi bi-boxes"></i> Inventory Reports</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'customers:customer_list' %}"><i class="bi bi-people"></i> Manage Customers</a>
+          </li>
+        </ul>
+      </div>
+
           <!-- Tab Content -->
           <div class="tab-content" id="userManagementTabsContent">
             

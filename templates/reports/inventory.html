@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inventory Report{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Inventory Report</h1>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Total Items</h4>
+                <h2>{{ total_items }}</h2>
+                <small>In inventory</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>In Stock</h4>
+                <h2>{{ in_stock_items }}</h2>
+                <small>Well stocked</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Low Stock</h4>
+                <h2>{{ low_stock_items }}</h2>
+                <small>Needs restocking</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h4>Total Value</h4>
+                <h2>₹{{ total_stock_value|floatformat:2 }}</h2>
+                <small>Stock value</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4>Stock Status Overview</h4>
+                <canvas id="stockChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4>Category Distribution</h4>
+                <canvas id="categoryChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Items -->
+    {% if low_stock_list %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>⚠️ Low Stock Items</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Restock Threshold</th>
+                                    <th>Status</th>
+                                    <th>Last Restocked</th>
+                                    <th>Stock Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_list %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td>{{ item.product.category.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.restock_threshold }}</td>
+                                    <td>
+                                        {% if item.quantity == 0 %}
+                                            <span class="status-badge status-out-of-stock">Out of Stock</span>
+                                        {% else %}
+                                            <span class="status-badge status-low-stock">Low Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.last_restocked|date:"M d, Y" }}</td>
+                                    <td>₹{{ item.stock_value|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Category Breakdown -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Category Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Number of Items</th>
+                                    <th>Total Stock Value</th>
+                                    <th>Average Value per Item</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category, data in category_data.items %}
+                                <tr>
+                                    <td>{{ category }}</td>
+                                    <td>{{ data.count }}</td>
+                                    <td>₹{{ data.value|floatformat:2 }}</td>
+                                    <td>₹{{ data.avg_value|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Options -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Export Options</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'reports:export_inventory_csv' %}" class="export-btn">Export Inventory CSV</a>
+                    <a href="{% url 'reports:export_inventory_pdf' %}" class="export-btn">Export Inventory PDF</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    // Stock Status Chart
+    const stockCtx = document.getElementById('stockChart').getContext('2d');
+    const stockChart = new Chart(stockCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+            datasets: [{
+                data: [{{ in_stock_items }}, {{ low_stock_items }}, {{ out_of_stock_items }}],
+                backgroundColor: [
+                    '#28a745',
+                    '#ffc107',
+                    '#dc3545'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Category Distribution Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for category, data in category_data.items %}'{{ category }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Number of Items',
+                data: [{% for category, data in category_data.items %}{{ data.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 
