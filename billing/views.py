@@ -18,16 +18,18 @@ def generate_bill_number():
 @login_required
 def create_bill(request):
     BillItemFormSet = formset_factory(BillItemForm, extra=1)
+    generated_bill_number = generate_bill_number()  # <-- define this at the top
 
     if request.method == 'POST':
         bill_form = BillForm(request.POST)
         formset = BillItemFormSet(request.POST)
         action = request.POST.get('action')
+        
         if action == 'proceed_to_customer' and bill_form.is_valid() and formset.is_valid():
             # Save bill as draft
             bill = bill_form.save(commit=False)
             bill.cashier = request.user
-            bill.bill_number = generate_bill_number()
+            bill.bill_number = generated_bill_number  # <-- use the one already generated
             bill.total_amount = Decimal('0')
             bill.status = 'draft'
             bill.save()
@@ -46,6 +48,7 @@ def create_bill(request):
                     bill_item.price_at_purchase = product.price
                     bill_item.save()
                     bill.total_amount += bill_item.total_price
+            
             bill.total_amount -= bill.discount
             bill.save()
 
@@ -56,13 +59,13 @@ def create_bill(request):
     else:
         bill_form = BillForm()
         formset = BillItemFormSet()
-        generated_bill_number = generate_bill_number()
 
     return render(request, 'billing/bill_form.html', {
         'bill_form': bill_form,
         'formset': formset,
         'bill_number': generated_bill_number
     })
+
 
 @login_required
 def customer_entry(request):
@@ -146,9 +149,11 @@ def final_submit_bill(request, customer_id):
         bill = get_object_or_404(Bill, id=bill_id)
         customer = get_object_or_404(Customer, id=customer_id)
         loyalty_discount = Decimal(request.POST.get('loyalty_discount', 0))
+        payment_method = request.POST.get('payment_method')
 
         # Update bill
         bill.customer = customer
+        bill.payment_method = payment_method  # <- Store payment method here
         bill.total_amount = max(bill.total_amount - loyalty_discount, 0)
         bill.status = 'completed'
         bill.save()

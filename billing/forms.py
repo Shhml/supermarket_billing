@@ -17,6 +17,11 @@ class BillForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        super(BillForm, self).__init__(*args, **kwargs)
+        self.fields['payment_method'].required = False  # <-- Make optional for now
+
+
 class BillItemForm(forms.ModelForm):
     class Meta:
         model = BillItem

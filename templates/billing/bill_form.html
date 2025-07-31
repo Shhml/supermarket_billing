@@ -20,11 +20,7 @@
       {{ bill_form.discount }}
     </div>
 
-    <!-- Payment method -->
-    <div class="mb-3">
-      <label for="{{ bill_form.payment_method.id_for_label }}"><strong>Payment Method:</strong></label>
-      {{ bill_form.payment_method }}
-    </div>
+
 
     <h4>Items</h4>
     <div id="formset-container">
@@ -60,7 +56,10 @@
       <input type="text" id="total-amount" class="form-control" readonly />
     </div>
 
-    <button type="submit" class="btn btn-primary" id="proceed-btn">Proceed to Customer</button>
+    <button type="submit" class="btn btn-primary" name="action" value="proceed_to_customer" id="proceed-btn">
+      Proceed to Customer
+    </button>
+
   </form>
 </div>
 
