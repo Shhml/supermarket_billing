@@ -32,15 +32,37 @@
       {% endfor %}
     </tbody>
   </table>
-
+   
   <p><strong>Total:</strong> ₹{{ total }}</p>
   <p><strong>Discount (Flat + Loyalty):</strong> ₹{{ discount }}</p>
   <p><strong>Final Amount:</strong> ₹{{ final_amount }}</p>
+
+  
 
   <form method="post" action="{% url 'final_submit_bill' customer.id %}" id="final-bill-form">
     {% csrf_token %}
     <input type="hidden" name="bill_id" value="{{ bill.id }}">
     <input type="hidden" name="loyalty_discount" value="{{ loyalty_discount }}">
+      <div class="mb-3">
+      <label for="payment-method"><strong>Payment Method:</strong></label>
+      <select name="payment_method" id="payment-method" class="form-select" required>
+        <option value="">Select</option>
+        <option value="Cash">Cash</option>
+        <option value="Card">Card</option>
+        <option value="UPI">UPI</option>
+      </select>
+    </div>
+    <div class="mb-3" id="amount-received-group" style="display: none;">
+      <label for="amount_received"><strong>Amount Received:</strong></label>
+      <input type="number" class="form-control" id="amount_received" name="amount_received" placeholder="Enter amount received">
+    </div>
+
+    <div class="mb-3" id="balance-display" style="display: none;">
+      <label><strong>Balance to Return:</strong></label>
+      <p id="balance_amount" class="form-control-plaintext text-success fw-bold">₹ 0</p>
+    </div>
+
+
     <button type="submit" class="btn btn-success" id="submit-final-btn">Submit Final Bill</button>
   </form>
 
@@ -58,5 +80,49 @@
     submitFinalBtn.disabled = true;
     submitFinalBtn.innerText = "Submitting...";
   });
+
+  const paymentMethod = document.getElementById("payment-method"); // ID should match the select element
+  const amountReceivedGroup = document.getElementById("amount-received-group");
+  const amountReceivedInput = document.getElementById("amount_received");
+  const balanceDisplay = document.getElementById("balance-display");
+  const balanceAmount = document.getElementById("balance_amount");
+
+  // Use the actual final amount rendered from backend (already includes discount)
+  const fallbackAmount = 0;
+  const totalBillAmount = parseFloat("{{ final_amount|floatformat:'2' }}".replace(",", "")) || fallbackAmount;
+
+
+  // Show/hide amount received field based on payment method
+  paymentMethod.addEventListener("change", function () {
+    if (this.value === "Cash") {
+      amountReceivedGroup.style.display = "block";
+    } else {
+      amountReceivedGroup.style.display = "none";
+      balanceDisplay.style.display = "none";
+      amountReceivedInput.value = "";
+    }
+  });
+
+  // Calculate and display balance
+  amountReceivedInput.addEventListener("input", function () {
+    const received = parseFloat(this.value);
+    if (!isNaN(received)) {
+      const balance = (received - totalBillAmount).toFixed(2);
+      balanceAmount.textContent = `₹ ${balance}`;
+      balanceDisplay.style.display = "block";
+
+      // Optional: Show balance in green/red based on over/under payment
+      if (received < totalBillAmount) {
+        balanceAmount.classList.remove("text-success");
+        balanceAmount.classList.add("text-danger");
+      } else {
+        balanceAmount.classList.remove("text-danger");
+        balanceAmount.classList.add("text-success");
+      }
+    } else {
+      balanceDisplay.style.display = "none";
+    }
+  });
 </script>
+
 {% endblock %}
