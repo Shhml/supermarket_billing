@@ -1,11 +1,261 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/inventory.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h2>{% if object %}Edit{% else %}Add{% endif %} Inventory</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save</button>
-  </form>
+<div class="container mt-5">
+  <div class="inventory-container">
+    
+    <!-- Header Section -->
+    <div class="inventory-header">
+      <h2 class="page-title">
+        <i class="bi bi-{% if object %}pencil-square{% else %}plus-circle{% endif %}"></i>
+        <span>{% if object %}Edit Inventory Item{% else %}Add New Inventory Item{% endif %}</span>
+      </h2>
+      <div class="header-actions">
+        <a href="{% url 'inventory_list' %}" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i>
+          Back to List
+        </a>
+      </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="form-container">
+        
+        <!-- Form Card -->
+        <div class="form-card">
+          <div class="form-header">
+            <h5 class="form-title">
+              <i class="bi bi-clipboard-data"></i>
+              Inventory Details
+            </h5>
+            <p class="form-subtitle">
+              {% if object %}
+                Update the inventory information for this item.
+              {% else %}
+                Fill in the details to add a new item to your inventory.
+              {% endif %}
+            </p>
+          </div>
+          
+          <div class="form-body">
+            <form method="post" class="inventory-form">
+              {% csrf_token %}
+              
+              <!-- Enhanced form rendering -->
+              <div class="form-fields">
+                {% for field in form %}
+                  <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                      {% if field.name == 'product' %}
+                        <i class="bi bi-box-seam"></i>
+                      {% elif field.name == 'quantity' %}
+                        <i class="bi bi-123"></i>
+                      {% elif field.name == 'restock_threshold' %}
+                        <i class="bi bi-speedometer2"></i>
+                      {% elif field.name == 'last_restocked' %}
+                        <i class="bi bi-calendar-event"></i>
+                      {% else %}
+                        <i class="bi bi-info-circle"></i>
+                      {% endif %}
+                      {{ field.label }}
+                      {% if field.field.required %}
+                        <span class="required-asterisk">*</span>
+                      {% endif %}
+                    </label>
+                    
+                    {% if field.field.widget.input_type == 'select' %}
+                      <div class="select-wrapper">
+                        {{ field }}
+                        <i class="bi bi-chevron-down select-icon"></i>
+                      </div>
+                    {% else %}
+                      {{ field }}
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                      <div class="field-errors">
+                        {% for error in field.errors %}
+                          <span class="error-message">
+                            <i class="bi bi-exclamation-circle"></i>
+                            {{ error }}
+                          </span>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                    
+                    {% if field.help_text %}
+                      <small class="help-text">{{ field.help_text }}</small>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+              
+              <!-- Form Actions -->
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                  <i class="bi bi-{% if object %}check-circle{% else %}plus-circle{% endif %}"></i>
+                  {% if object %}Update Inventory{% else %}Add to Inventory{% endif %}
+                </button>
+                <a href="{% url 'inventory_list' %}" class="btn btn-secondary btn-lg">
+                  <i class="bi bi-x-circle"></i>
+                  Cancel
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Additional Info Card (if editing) -->
+        {% if object %}
+        <div class="form-card" style="margin-top: 20px;">
+          <div class="form-header">
+            <h5 class="form-title">
+              <i class="bi bi-info-circle"></i>
+              Current Status
+            </h5>
+          </div>
+          <div class="form-body">
+            <div class="stats-row">
+              <div class="stat-card {% if object.is_low_stock %}low-stock{% else %}in-stock{% endif %}">
+                <div class="stat-content">
+                  <i class="bi bi-{% if object.is_low_stock %}exclamation-triangle{% else %}check-circle{% endif %} stat-icon"></i>
+                  <div class="stat-info">
+                    <div class="stat-label">Current Status</div>
+                    <div class="stat-value">{% if object.is_low_stock %}Low Stock{% else %}In Stock{% endif %}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="stat-card total-items">
+                <div class="stat-content">
+                  <i class="bi bi-box stat-icon"></i>
+                  <div class="stat-info">
+                    <div class="stat-label">Current Quantity</div>
+                    <div class="stat-value">{{ object.quantity }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form enhancement scripts
+document.addEventListener('DOMContentLoaded', function() {
+  // Add loading state to submit button
+  const form = document.querySelector('.inventory-form');
+  const submitBtn = document.getElementById('submitBtn');
+  
+  if (form && submitBtn) {
+    form.addEventListener('submit', function(e) {
+      const originalHTML = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+      submitBtn.disabled = true;
+      
+      // Re-enable after 5 seconds as fallback (in case of errors)
+      setTimeout(() => {
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
+      }, 5000);
+    });
+  }
+  
+  // Enhance select dropdowns
+  const selects = document.querySelectorAll('select');
+  selects.forEach(select => {
+    // Add change event listener
+    select.addEventListener('change', function() {
+      this.classList.add('has-selection');
+    });
+    
+    // Check if already has value on page load
+    if (select.value && select.value !== '') {
+      select.classList.add('has-selection');
+    }
+  });
+  
+  // Auto-focus first field
+  const firstField = form ? form.querySelector('input:not([type="hidden"]), select, textarea') : null;
+  if (firstField) {
+    firstField.focus();
+  }
+  
+  // Add real-time validation feedback
+  const formFields = document.querySelectorAll('.form-control, select');
+  formFields.forEach(field => {
+    field.addEventListener('blur', function() {
+      validateField(this);
+    });
+    
+    field.addEventListener('input', function() {
+      clearFieldErrors(this);
+    });
+  });
+  
+  // Form validation function
+  function validateField(field) {
+    const formGroup = field.closest('.form-group');
+    
+    // Remove existing success states
+    field.classList.remove('is-valid');
+    
+    if (field.hasAttribute('required') && !field.value.trim()) {
+      field.classList.add('is-invalid');
+      return false;
+    } else if (field.value.trim()) {
+      field.classList.remove('is-invalid');
+      field.classList.add('is-valid');
+      return true;
+    }
+    
+    return true;
+  }
+  
+  function clearFieldErrors(field) {
+    field.classList.remove('is-invalid');
+  }
+  
+  // Add animation to form elements
+  const formGroups = document.querySelectorAll('.form-group');
+  formGroups.forEach((group, index) => {
+    group.style.animationDelay = `${index * 0.1}s`;
+    group.style.animation = 'fadeInUp 0.6s ease-out forwards';
+  });
+});
+
+// Add CSS for validation states
+const style = document.createElement('style');
+style.textContent = `
+  .form-control.is-valid,
+  select.is-valid {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  }
+  
+  .form-control.is-invalid,
+  select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+  }
+  
+  .form-group {
+    opacity: 0;
+  }
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %}
