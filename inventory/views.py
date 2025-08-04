@@ -29,7 +29,7 @@ class InventoryUpdateView(UpdateView):
     template_name = 'inventory/inventory_form.html'
     success_url = reverse_lazy('inventory_list')
 
-# ✅ Get Product Price API (used by AJAX in billing)
+#  Get Product Price API (used by AJAX in billing)
 def get_product_price(request, product_id):
     try:
         product = Product.objects.get(pk=product_id)
